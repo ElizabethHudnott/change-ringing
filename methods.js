@@ -5,9 +5,6 @@ const Cover = Object.freeze({
 	EITHER:	3,
 });
 
-// Maps time to pitch (descending from 1).
-let rows = [round(4)];
-
 function factorial(n) {
 	let result = 1;
 	while (n > 1) {
@@ -16,13 +13,101 @@ function factorial(n) {
 	return result;
 }
 
-function round(n) {
-	const row = new Array(n);
-	for (let i = 1; i <= n; i++) {
-		row[i - 1] = i;
-	}
-	return row;
+function maxOddEven(n) {
+	return (n & 1) ? [n, n - 1] : [n - 1, n];
 }
+
+const NamedRow = {
+
+	rounds: function (n) {
+		const row = new Array(n);
+		for (let i = 1; i <= n; i++) {
+			row[i - 1] = i;
+		}
+		return row;
+	},
+
+	burdette: function (n) {
+		const row = [];
+		const repetititions = Math.trunc(n / 3);
+		let pattern;
+		if (n % 3 === 0) {
+			pattern = [1, -1, 0];
+		} else {
+			pattern = [1, 1, -2];
+			let patternLength = 3;
+			while (n % patternLength !== 0 && patternLength < n) {
+				pattern.push(0);
+				patternLength++;
+			}
+		}
+		for (let i = 1; i <= n; i++) {
+			row[i - 1 + pattern[(i - 1) % pattern.length]] = i;
+		}
+		return row;
+	},
+
+	kings: function (n) {
+		const row = [];
+		const maxEven = (n & 1) ? n - 1 : n;
+		for (let i = maxEven - 1; i >= 1; i -= 2) {
+			row.push(i);
+		}
+		for (let i = 2; i <= maxEven; i += 2) {
+			row.push(i);
+		}
+		if (n & 1) {
+			row.push(n);
+		}
+		return row;
+	},
+
+	queens: function (n) {
+		const row = [];
+		for (let i = 1 + (n & 1); i <= n - 1; i += 2) {
+			row.push(i);
+		}
+		for (let i = 2 - (n & 1); i <= n; i += 2) {
+			row.push(i);
+		}
+		return row;
+	},
+
+	tittums: function (n) {
+		const row = [];
+		let a = 1, b = Math.ceil(0.5 * n) + 1;
+		for (let i = 0; i + 2 <= n; i += 2) {
+			row.push(a, b);
+			a++;
+			b++;
+		}
+		if (n & 1) {
+			row.unshift(a);
+		}
+		return row;
+	},
+
+	whittingtons: function whittingtons(n) {
+		if (n >= 12) {
+			return [5, 3, 1, 2, 4, 6].concat(whittingtons(n - 6).map(x => x + 6));
+		}
+
+		const [maxOdd, maxEven] = maxOddEven(n);
+		const prefixLength = maxEven - 6;
+		const row = [];
+		for (let i = 1; i <= prefixLength; i++) {
+			row.push(i);
+		}
+		for (let i = maxOdd; i > prefixLength - 1; i -= 2) {
+			row.push(i);
+		}
+		for (let i = prefixLength + 2; i <= maxEven; i += 2) {
+			row.push(i);
+		}
+		return row;
+	},
+
+};
 
 /**
  * Requires at least 3 bells.
