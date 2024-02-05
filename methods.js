@@ -27,6 +27,15 @@ const NamedRow = {
 		return row;
 	},
 
+	backRounds: function (n) {
+		const row = new Array(n);
+		for (let i = 0; i < n - 1; i++) {
+			row[i] = n - 1 - i;
+		}
+		row[n - 1] = n;
+		return row;
+	},
+
 	burdette: function (n) {
 		const row = [];
 		const repetititions = Math.trunc(n / 3);
@@ -47,6 +56,21 @@ const NamedRow = {
 		return row;
 	},
 
+	hagdyke: function (n) {
+		let prefixLength = 0, row = [];
+		if (n % 4 === 0) {
+			row = [1, 2];
+			prefixLength = 2;
+		}
+		const pattern = [2, 2, -2, -2];
+		for (let i = prefixLength + 1; i <= n - 2; i++) {
+			row[i - 1 + pattern[(i - prefixLength - 1) % 4]] = i;
+		}
+		row[n - 2] = n - 1;
+		row[n - 1] = n;
+		return row;
+	},
+
 	kings: function (n) {
 		const row = [];
 		const maxEven = (n & 1) ? n - 1 : n;
@@ -57,7 +81,7 @@ const NamedRow = {
 			row.push(i);
 		}
 		if (n & 1) {
-			row.push(n);
+			row[n - 1] = n;
 		}
 		return row;
 	},
@@ -119,7 +143,7 @@ const NamedRow = {
 function plainHunt(previousRow, numRows, cover = Cover.NONE, firstSwap = undefined) {
 	const numBells = previousRow.length;
 	let firstSwapper = 0, lastSwapper = numBells - 1;
-	let numBobbing = numBells;
+	let numWeaving = numBells;
 	if (cover !== Cover.NONE) {
 		if (cover === Cover.EITHER) {
 			cover = previousRow[0] > previousRow[numBells - 1] ? Cover.LEFT : Cover.RIGHT;
@@ -129,14 +153,14 @@ function plainHunt(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 		} else {
 			lastSwapper--;
 		}
-		numBobbing--;
+		numWeaving--;
 	}
 	if (firstSwap === undefined) {
 		const indexOf1 = previousRow.indexOf(1);
 		firstSwap = indexOf1 === firstSwapper || indexOf1 === lastSwapper ? 0 : 1;
 	}
 	if (numRows === undefined) {
-		numRows = 2 * numBobbing;
+		numRows = 2 * numWeaving;
 	}
 
 	const output = [];
@@ -160,7 +184,7 @@ function plainHunt(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 function plainBob(previousRow, numRows, cover = Cover.NONE, firstSwap = undefined) {
 	const numBells = previousRow.length;
 	let firstSwapper = 0, lastSwapper = numBells - 1;
-	let numBobbing = numBells;
+	let numWeaving = numBells;
 	if (cover !== Cover.NONE) {
 		if (cover === Cover.EITHER) {
 			cover = previousRow[0] > previousRow[numBells - 1] ? Cover.LEFT : Cover.RIGHT;
@@ -170,14 +194,14 @@ function plainBob(previousRow, numRows, cover = Cover.NONE, firstSwap = undefine
 		} else {
 			lastSwapper--;
 		}
-		numBobbing--;
+		numWeaving--;
 	}
 	if (firstSwap === undefined) {
 		const indexOf1 = previousRow.indexOf(1);
 		firstSwap = indexOf1 === firstSwapper || indexOf1 === lastSwapper ? 0 : 1;
 	}
 	if (numRows === undefined) {
-		numRows = 2 * numBobbing * (numBobbing - 1);
+		numRows = 2 * numWeaving * (numWeaving - 1);
 	}
 
 	const output = [];
@@ -207,7 +231,7 @@ function plainBob(previousRow, numRows, cover = Cover.NONE, firstSwap = undefine
 function grandsire(previousRow, numRows, cover = Cover.NONE, firstSwap = undefined) {
 	const numBells = previousRow.length;
 	let firstSwapper = 0, lastSwapper = numBells - 1;
-	let numBobbing = numBells;
+	let numWeaving = numBells;
 	if (cover !== Cover.NONE) {
 		if (cover === Cover.EITHER) {
 			cover = previousRow[0] > previousRow[numBells - 1] ? Cover.LEFT : Cover.RIGHT;
@@ -217,14 +241,14 @@ function grandsire(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 		} else {
 			lastSwapper--;
 		}
-		numBobbing--;
+		numWeaving--;
 	}
 	if (firstSwap === undefined) {
 		const indexOf1 = previousRow.indexOf(1);
 		firstSwap = indexOf1 === firstSwapper || indexOf1 === lastSwapper ? 0 : 1;
 	}
 	if (numRows === undefined) {
-		numRows = 2 * numBobbing * (numBobbing - 2);
+		numRows = 2 * numWeaving * (numWeaving - 2);
 	}
 
 	const output = [];
@@ -248,4 +272,16 @@ function grandsire(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 		firstSwap = 1 - firstSwap;
 	}
 	return output;
+}
+
+const Method = {
+	plainHunt: plainHunt,
+	plainBob: plainBob,
+	grandsire: grandsire,
+}
+
+export {
+	NamedRow,
+	Cover,
+	Method,
 }
