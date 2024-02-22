@@ -156,8 +156,7 @@ function plainHunt(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 		numWeaving--;
 	}
 	if (firstSwap === undefined) {
-		const indexOf1 = previousRow.indexOf(1);
-		firstSwap = indexOf1 === firstSwapper || indexOf1 === lastSwapper ? 0 : 1;
+		firstSwap = previousRow[firstSwapper] === 1 ? 0 : 1;
 	}
 	if (numRows === undefined) {
 		numRows = 2 * numWeaving;
@@ -197,8 +196,7 @@ function plainBob(previousRow, numRows, cover = Cover.NONE, firstSwap = undefine
 		numWeaving--;
 	}
 	if (firstSwap === undefined) {
-		const indexOf1 = previousRow.indexOf(1);
-		firstSwap = indexOf1 === firstSwapper || indexOf1 === lastSwapper ? 0 : 1;
+		firstSwap = previousRow[firstSwapper] === 1 ? 0 : 1;
 	}
 	if (numRows === undefined) {
 		numRows = 2 * numWeaving * (numWeaving - 1);
@@ -244,8 +242,7 @@ function grandsire(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 		numWeaving--;
 	}
 	if (firstSwap === undefined) {
-		const indexOf1 = previousRow.indexOf(1);
-		firstSwap = indexOf1 === firstSwapper || indexOf1 === lastSwapper ? 0 : 1;
+		firstSwap = previousRow[firstSwapper] === 1 ? 0 : 1;
 	}
 	if (numRows === undefined) {
 		numRows = 2 * numWeaving * (numWeaving - 2);

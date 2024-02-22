@@ -1,7 +1,3 @@
-import {NamedRow, Method, Cover} from './methods.js';
-window.NamedRow = NamedRow;
-window.Method = Method;
-
 const SAMPLE_PATH = 'samples/MusyngKite/';
 let instrument = 'tubular_bells';
 
@@ -32,14 +28,13 @@ const Scales = {
 }
 
 let scale = Scales.MAJOR;
-let numberOfBells = 6;
-let noteNumbers = [65];
+let noteNumbers = [];
 
-function loadSamples() {
-	let currentNote = noteNumbers[0];
+function loadSamples(treble, numberOfNotes) {
+	let currentNote = treble;
 	const newNotes = [];
 	let index = scale.length - 1;
-	for (let i = 0; i < numberOfBells; i++) {
+	for (let i = 0; i < numberOfNotes; i++) {
 		newNotes.push(currentNote);
 		currentNote -= scale[index];
 		index--;
@@ -59,7 +54,14 @@ function loadSamples() {
 	Promise.all(promises).then(() => noteNumbers = newNotes);
 }
 
-loadSamples();
+function setNotes(treble, numberOfNotes) {
+	loadSamples(treble, numberOfNotes);
+}
+
+function instrumentChange(name) {
+	instrument = name;
+	loadSamples(noteNumbers[0], noteNumbers.length);
+}
 
 function playNote(bellNumber, time) {
 	const midiNote = noteNumbers[bellNumber - 1];
@@ -83,7 +85,7 @@ let firstRowNumber = 0;
 let currentRowNumber = 0;
 let nextColumnNumber = 0;
 let noteLength = 60 / 104;
-let lastScheduled;
+let lastScheduled, onrow;
 const LOOKAHEAD_TIME = 0.1;
 const SCHEDULING_INTERVAL = 0.025;
 
@@ -112,12 +114,19 @@ function scheduleNotes() {
 			}
 			row = rows[currentRowNumber];
 			numNotesInRow = row.length;
+			if (onrow) {
+				onrow(row, nextNoteTime);
+			}
 		}
 	}
 	setTimeout(scheduleNotes, SCHEDULING_INTERVAL);
 }
 
-function setNewRows(newRows) {
+function getAudioContext() {
+	return context;
+}
+
+function setMusic(newRows) {
 	if (nextColumnNumber === 0) {
 		rows = newRows;
 		firstRowNumber = 0;
@@ -125,16 +134,30 @@ function setNewRows(newRows) {
 		rows = [rows[currentRowNumber]].concat(newRows);
 		firstRowNumber = 1;
 	}
+	if (lastScheduled === undefined) {
+		lastScheduled = nextQuantum() - noteLength;
+		scheduleNotes();
+	}
 }
 
-document.getElementById('btn-start').addEventListener('click', function (event) {
-	context.resume();
-	rows = [ NamedRow.rounds(numberOfBells) ];
-	lastScheduled = nextQuantum() - noteLength;
-	scheduleNotes();
-});
+function setBarCallback(callback) {
+	onrow = callback;
+}
 
-document.getElementById('btn-grandsire').addEventListener('pointerdown', function (event) {
-	const newRows = Method.grandsire(rows[currentRowNumber], undefined, Cover.EITHER);
-	setNewRows(newRows);
-});
+function getCurrentBar() {
+	return rows[currentRowNumber];
+}
+
+function repeatBar(row) {
+	setMusic([row]);
+}
+
+export {
+	getAudioContext,
+	setNotes,
+	instrumentChange,
+	setMusic,
+	setBarCallback,
+	getCurrentBar,
+	repeatBar,
+}
