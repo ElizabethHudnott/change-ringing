@@ -133,6 +133,95 @@ const NamedRow = {
 
 };
 
+function homing(previousRow, targetRow) {
+	const prevNumBells = previousRow.length;
+	const targetNumBells = targetRow.length;
+
+	const output = [];
+	let row = previousRow;
+
+	const toAdd = targetRow.slice();					// List of values
+	const toRemove = new Array(prevNumBells);		// List of true/false
+	let numToRemove = 0;
+	for (let i = 0; i < prevNumBells; i++) {
+		const bellNumber = row[i];
+		const index = toAdd.indexOf(bellNumber);
+		if (index === -1) {
+			toRemove[i] = true;
+			numToRemove++;
+		} else {
+			toRemove[i] = false;
+			toAdd.splice(index, 1);
+		}
+	}
+	const common = targetRow.slice();
+	for (let addedValue of toAdd) {
+		common.splice(common.indexOf(addedValue), 1);
+	}
+
+	const sortNumBells = prevNumBells - Math.max(numToRemove - toAdd.length, 0);
+	let sortedUpTo = -1;
+	while (sortedUpTo < sortNumBells - 1) {
+		while (sortedUpTo < sortNumBells - 1 && row[sortedUpTo + 1] === common[sortedUpTo + 1]) {
+			sortedUpTo++;
+		}
+		const index = Math.trunc(Math.random() * (sortNumBells - sortedUpTo - 2)) + sortedUpTo + 1;
+		row = row.slice();
+		let removed = false;
+		if (toRemove[index]) {
+			row.splice(index, 1);
+			toRemove.splice(index, 1);
+			removed = true;
+		} else if (toRemove[index + 1]) {
+			row.splice(index + 1, 1);
+			toRemove.splice(index + 1, 1);
+			removed = true;
+		} else {
+			const value1 = row[index];
+			const value2 = row[index + 1];
+			if (common.indexOf(value1, sortedUpTo + 1) > common.indexOf(value2, sortedUpTo + 1)) {
+				row[index] = value2;
+				row[index + 1] = value1;
+				output.push(row);
+			}
+		}
+		if (removed) {
+			if (toAdd.length > 0) {
+				const valueToAdd = toAdd.shift();
+				let insertIndex = sortedUpTo + 1;
+				let insertIndex2 = insertIndex;
+				const targetIndex = targetRow.indexOf(valueToAdd, insertIndex);
+				while (
+					insertIndex < row.length &&
+					(
+						toRemove[insertIndex] ||
+						targetRow.indexOf(row[insertIndex], insertIndex2) < targetIndex
+					)
+				) {
+					if (!toRemove[insertIndex]) {
+						insertIndex2++;
+					}
+					insertIndex++;
+				}
+				row.splice(insertIndex, 0, valueToAdd);
+				common.splice(insertIndex2, 0, valueToAdd);
+				toRemove.splice(insertIndex, 0, false);
+			}
+			output.push(row);
+		}
+	}
+	for (let addedValue of toAdd) {
+		row = row.slice();
+		const index = targetRow.indexOf(addedValue);
+		row.splice(index, 0, addedValue);
+		output.push(row);
+	}
+	if (output.length === 0) {
+		output.push(targetRow.slice());
+	}
+	return output;
+}
+
 /**
  * Requires at least 3 bells.
  * @param {number} [numRows] How many rows of plain hunting to return or undefined to
@@ -142,6 +231,7 @@ const NamedRow = {
  */
 function plainHunt(previousRow, numRows, cover = Cover.NONE, firstSwap = undefined) {
 	const numBells = previousRow.length;
+	const minBell = Math.min(...previousRow);
 	let firstSwapper = 0, lastSwapper = numBells - 1;
 	let numWeaving = numBells;
 	if (cover !== Cover.NONE) {
@@ -156,7 +246,7 @@ function plainHunt(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 		numWeaving--;
 	}
 	if (firstSwap === undefined) {
-		firstSwap = previousRow[firstSwapper] === 1 ? 0 : 1;
+		firstSwap = previousRow[firstSwapper] === minBell ? 0 : 1;
 	}
 	if (numRows === undefined) {
 		numRows = 2 * numWeaving;
@@ -182,6 +272,7 @@ function plainHunt(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
  */
 function plainBob(previousRow, numRows, cover = Cover.NONE, firstSwap = undefined) {
 	const numBells = previousRow.length;
+	const minBell = Math.min(...previousRow);
 	let firstSwapper = 0, lastSwapper = numBells - 1;
 	let numWeaving = numBells;
 	if (cover !== Cover.NONE) {
@@ -196,7 +287,7 @@ function plainBob(previousRow, numRows, cover = Cover.NONE, firstSwap = undefine
 		numWeaving--;
 	}
 	if (firstSwap === undefined) {
-		firstSwap = previousRow[firstSwapper] === 1 ? 0 : 1;
+		firstSwap = previousRow[firstSwapper] === minBell ? 0 : 1;
 	}
 	if (numRows === undefined) {
 		numRows = 2 * numWeaving * (numWeaving - 1);
@@ -207,7 +298,7 @@ function plainBob(previousRow, numRows, cover = Cover.NONE, firstSwap = undefine
 	for (let i = 0; i < numRows; i++) {
 		const nextRow = row.slice();
 		let lowerSwap;
-		if (row[firstSwapper] === 1 && firstSwap === 1) {
+		if (row[firstSwapper] === minBell && firstSwap === 1) {
 			lowerSwap = firstSwapper + 2;
 		} else {
 			lowerSwap = firstSwapper + firstSwap;
@@ -228,6 +319,7 @@ function plainBob(previousRow, numRows, cover = Cover.NONE, firstSwap = undefine
  */
 function grandsire(previousRow, numRows, cover = Cover.NONE, firstSwap = undefined) {
 	const numBells = previousRow.length;
+	const minBell = Math.min(...previousRow);
 	let firstSwapper = 0, lastSwapper = numBells - 1;
 	let numWeaving = numBells;
 	if (cover !== Cover.NONE) {
@@ -242,7 +334,7 @@ function grandsire(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 		numWeaving--;
 	}
 	if (firstSwap === undefined) {
-		firstSwap = previousRow[firstSwapper] === 1 ? 0 : 1;
+		firstSwap = previousRow[firstSwapper] === minBell ? 0 : 1;
 	}
 	if (numRows === undefined) {
 		numRows = 2 * numWeaving * (numWeaving - 2);
@@ -253,7 +345,7 @@ function grandsire(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 	for (let i = 0; i < numRows; i++) {
 		const nextRow = row.slice();
 		let lowerSwap;
-		if (row[firstSwapper] === 1 && firstSwap === 0) {
+		if (row[firstSwapper] === minBell && firstSwap === 0) {
 			nextRow[firstSwapper] = row[firstSwapper + 1];
 			nextRow[firstSwapper + 1] = row[firstSwapper];
 			lowerSwap = firstSwapper + 3;
@@ -281,4 +373,5 @@ export {
 	NamedRow,
 	Cover,
 	Method,
+	homing,
 }

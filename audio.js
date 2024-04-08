@@ -51,11 +51,11 @@ function loadSamples(treble, numberOfNotes) {
 			promises.push(promise);
 		}
 	}
-	Promise.all(promises).then(() => noteNumbers = newNotes);
+	return Promise.all(promises).then(() => noteNumbers = newNotes);
 }
 
 function setNotes(treble, numberOfNotes) {
-	loadSamples(treble, numberOfNotes);
+	return loadSamples(treble, numberOfNotes);
 }
 
 function instrumentChange(name) {
@@ -85,7 +85,8 @@ let firstRowNumber = 0;
 let currentRowNumber = 0;
 let nextColumnNumber = 0;
 let noteLength = 60 / 104;
-let lastScheduled, onrow;
+let lastScheduled = 0;
+let onrow;
 const LOOKAHEAD_TIME = 0.1;
 const SCHEDULING_INTERVAL = 0.025;
 
@@ -97,8 +98,9 @@ function nextQuantum() {
 function scheduleNotes() {
 	let row = rows[currentRowNumber];
 	let numNotesInRow = row.length;
-	let nextNoteTime = lastScheduled + noteLength;
-	const maxSchedule = context.currentTime + LOOKAHEAD_TIME;
+	const currentTime = context.currentTime;
+	let nextNoteTime = Math.max(lastScheduled + noteLength, currentTime + 255 / context.sampleRate);
+	const maxSchedule = currentTime + LOOKAHEAD_TIME;
 	while (nextNoteTime <= maxSchedule) {
 		const nextBell = row[nextColumnNumber];
 		playNote(nextBell, nextNoteTime);
@@ -119,25 +121,23 @@ function scheduleNotes() {
 			}
 		}
 	}
-	setTimeout(scheduleNotes, SCHEDULING_INTERVAL);
+	setTimeout(scheduleNotes, SCHEDULING_INTERVAL * 1000);
 }
 
 function getAudioContext() {
 	return context;
 }
 
-function setMusic(newRows) {
+function setMusic(newRows, loopFrom = 0) {
 	if (nextColumnNumber === 0) {
 		rows = newRows;
-		firstRowNumber = 0;
+		firstRowNumber = loopFrom;
 	} else {
 		rows = [rows[currentRowNumber]].concat(newRows);
-		firstRowNumber = 1;
+		firstRowNumber = loopFrom + 1;
 	}
-	if (lastScheduled === undefined) {
-		lastScheduled = nextQuantum() - noteLength;
-		scheduleNotes();
-	}
+	currentRowNumber = 0;
+	scheduleNotes();
 }
 
 function setBarCallback(callback) {
@@ -145,7 +145,7 @@ function setBarCallback(callback) {
 }
 
 function getCurrentBar() {
-	return rows[currentRowNumber];
+	return rows[currentRowNumber].slice();
 }
 
 function repeatBar(row) {
