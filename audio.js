@@ -1,4 +1,4 @@
-const SAMPLE_PATH = 'samples/MusyngKite/';
+const SAMPLE_PATH = 'https://gleitz.github.io/midi-js-soundfonts/MusyngKite/';
 let instrument = 'tubular_bells';
 
 const NOTE_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
