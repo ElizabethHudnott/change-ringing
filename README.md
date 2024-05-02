@@ -1,5 +1,6 @@
 # Demystifying the Churchyard
-**Digital sensory exploration**
+**Digital sensory sense making**
+
 Jason's photo prompted memories of my village church growing up, at home hearing the bells ringing out across the allotment and seeing the shapes of the gravestones and the Celtic weaving patterns in the same village churchyard. Early on in the project I stumbled across an online lecture called *The Mathematics of Bell Ringing*. These technicalities weren't something I was previously familiar with but are the kind of geeky combination of music, physics and maths that excites me. This solidified my choice of photograph and inspired my creativity and desire to delve further. Coding lets me think about both the specific and the general aspects, for example contemplating making visualizations of other forms of music.
 
 ## Aperture into the Code
