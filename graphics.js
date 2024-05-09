@@ -1,3 +1,5 @@
+const MAX_THREADS = 19;
+
 let colors = [
 	[0, 100, 50, 1],
 	[120, 100, 50, 1],
@@ -41,12 +43,20 @@ class Thread {
 		return this.positions.length;
 	}
 
+	trim(rowNum) {
+		const numTrim = Math.max(rowNum - this.initialRowNum, 0);
+		this.positions.splice(0, numTrim);
+		this.threadWidths.splice(0, numTrim);
+		this.initialRowNum = Math.max(this.initialRowNum - numTrim, 0);
+	}
+
 }
 
 let threads = [];
 let rowTimes = [];
 let maxThreadWidth = 0.5;
-let lastZoom, lastXOffset, lastDrawTime;
+let animationSpeed = 20;	// in pixels per second
+let lastXOffset, lastDrawTime;
 
 function addRow(row, time) {
 	let numRows = rowTimes.length;
@@ -99,8 +109,6 @@ function addRow(row, time) {
 	threads = threads.concat(newThreads);
 }
 
-let animationSpeed = 1;
-
 function hslaToString(color) {
 	return `hsla(${color[0]}, ${color[1]}%, ${color[2]}%, ${color[3]})`;
 }
@@ -122,7 +130,7 @@ function draw(context, time) {
 	}
 	const lastRowNum = rowNum;
 
-	const maxWidth = 12 + maxThreadWidth;
+	const maxWidth = MAX_THREADS + maxThreadWidth;
 	const activeThreads = new Set();
 	let maxBellNumber = 1;
 	let minBellNumber = 88;
@@ -140,7 +148,7 @@ function draw(context, time) {
 			}
 		}
 		numBells = maxBellNumber - minBellNumber + 1;
-		pixelsPerSecond = 60 * animationSpeed * maxWidth / (numBells - 1 + maxThreadWidth);
+		pixelsPerSecond = animationSpeed * maxWidth / (numBells - 1 + maxThreadWidth);
 		rowNum--;
 		rowTime = rowTimes[rowNum];
 	}
@@ -177,6 +185,16 @@ function draw(context, time) {
 		}
 		context.stroke();
 	}
+
+	let rowNumToKeep = firstRowNum;
+	// 8 pixels per second is minimum animation speed to retain fluid motion.
+	while (rowNumToKeep > 0 && screen.height > Math.round((time - rowTimes[rowNumToKeep]) * 8)) {
+		rowNumToKeep--;
+	}
+	for (let thread of threads) {
+		thread.trim(rowNumToKeep);
+	}
+	rowTimes.splice(0, rowNumToKeep);
 }
 
 export {

@@ -14,7 +14,7 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 
-let numberOfBells = 8;
+let numberOfBells = parseInt(document.getElementById('num-bells').value);
 let cover = Cover.EITHER;
 let trebleNote = 70;
 setNotes(trebleNote, numberOfBells);
@@ -143,7 +143,11 @@ document.getElementById('num-bells').addEventListener('change', function (event)
 	.then(function () {
 		numberOfBells = newNumberOfBells;
 		const firstBar = changeBarLength(getCurrentBar(), numberOfBells);
-		const newRows = rowGenerator(firstBar);
-		compositionFunction(newRows);
+		if (rowGenerator) {
+			const newRows = rowGenerator(firstBar);
+			compositionFunction(newRows);
+		} else {
+			setMusic([firstBar]);
+		}
 	});
 });
