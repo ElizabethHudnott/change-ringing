@@ -151,3 +151,30 @@ document.getElementById('num-bells').addEventListener('change', function (event)
 		}
 	});
 });
+
+// Full screen functionality
+{
+	const onButton = document.getElementById('btn-full-screen-on');
+	const offButton = document.getElementById('btn-full-screen-off');
+
+	if (document.fullscreenEnabled) {
+		const isFullScreen = document.fullscreenElement !== null;
+		onButton.hidden = isFullScreen;
+		offButton.hidden = !isFullScreen;
+
+		document.getElementById('btn-full-screen-on').addEventListener('click', function (event) {
+			document.documentElement.requestFullscreen({navigationUI: 'hide'});
+			document.getElementById('btn-full-screen-on').hidden = true;
+			document.getElementById('btn-full-screen-off').hidden = false;
+		});
+
+		document.getElementById('btn-full-screen-off').addEventListener('click', function (event) {
+			document.exitFullscreen();
+			document.getElementById('btn-full-screen-on').hidden = false;
+			document.getElementById('btn-full-screen-off').hidden = true;
+		});
+
+	} else {
+		onButton.hidden = true;
+	}
+}
