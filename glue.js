@@ -1,10 +1,11 @@
 import {NamedRow, Method, Cover, homing} from './methods.js';
 import {setNotes, getAudioContext, setBarCallback, getCurrentBar, repeatBar, setMusic} from './audio.js';
-import {addWeavingRow, drawWeave} from './graphics.js';
+import {addWeavingRow, drawWeave, setZoom} from './graphics.js';
 
 const audioContext = getAudioContext();
 const canvas = document.getElementById('canvas');
 const context2d =  canvas.getContext('2d');
+let zoom = 1;
 
 function resize() {
 	canvas.width = canvas.clientWidth;
@@ -13,6 +14,28 @@ function resize() {
 
 resize();
 window.addEventListener('resize', resize);
+
+document.body.addEventListener("wheel", function (event) {
+	if (!event.ctrlKey) {
+		return;
+	}
+   event.preventDefault();
+	let amount = -6 * event.deltaY;
+	if (amount === 0) {
+		return;
+	}
+	if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+		amount *= 16 * 1.2;
+	}
+	if (event.deltaMode !== WheelEvent.DOM_DELTA_PAGE) {
+		amount /= Math.max(window.innerWidth, window.innerHeight);
+	}
+	zoom = Math.max(zoom + amount, 1);
+	for (let element of document.getElementById('ui').children) {
+		element.style.zoom = zoom;
+	}
+	setZoom(zoom);
+}, {passive: false});
 
 let numberOfBells = parseInt(document.getElementById('num-bells').value);
 let cover = Cover.EITHER;

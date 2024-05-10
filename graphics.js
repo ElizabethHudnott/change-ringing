@@ -55,6 +55,7 @@ class Thread {
 let threads = [];
 let rowTimes = [];
 let maxThreadWidth = 0.5;
+let userZoom = 1;
 let animationSpeed = 20;	// in pixels per second
 let lastXOffset, lastDrawTime;
 
@@ -174,7 +175,7 @@ function draw(context, time) {
 		let positionY = canvasHeight - (time - rowTime) * pixelsPerSecond + offsetY;
 		context.beginPath();
 		context.moveTo(positionX, positionY);
-		context.lineWidth = thread.threadWidths[0] * zoomX;
+		context.lineWidth = Math.min(thread.threadWidths[0] * userZoom, 1) * zoomX;
 		context.strokeStyle = hslaToString(thread.color);
 		while (rowNum < threadLastRowNum) {
 			rowNum++;
@@ -197,7 +198,12 @@ function draw(context, time) {
 	rowTimes.splice(0, rowNumToKeep);
 }
 
+function setZoom(amount) {
+	userZoom = amount;
+}
+
 export {
 	addRow as addWeavingRow,
 	draw as drawWeave,
+	setZoom,
 }
