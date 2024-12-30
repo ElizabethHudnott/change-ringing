@@ -133,42 +133,42 @@ function draw(context, time) {
 
 	const maxWidth = MAX_THREADS + maxThreadWidth;
 	const activeThreads = new Set();
-	let maxBellNumber = 1;
-	let minBellNumber = 88;
-	let numBells;
+	let maxColumn = 1;
+	let minColumn = 88;
+	let numColumns;
 	let pixelsPerSecond = 0;
 	while (rowNum >= 0 && canvasHeight > Math.round((time - rowTime) * pixelsPerSecond)) {
 		for (let thread of threads) {
 			const initialRowNum = thread.initialRowNum;
-			const lastRowNum =  initialRowNum + thread.numberOfRows;
+			const lastRowNum =  initialRowNum + thread.numberOfRows - 1;
 			if (initialRowNum <= rowNum && lastRowNum >= rowNum) {
-				const bellNumber = thread.bellNumber;
-				minBellNumber = Math.min(minBellNumber, bellNumber);
-				maxBellNumber = Math.max(maxBellNumber, bellNumber);
+				const column = thread.positions[rowNum - initialRowNum];
+				minColumn = Math.min(minColumn, column);
+				maxColumn = Math.max(maxColumn, column);
 				activeThreads.add(thread);
 			}
 		}
-		numBells = maxBellNumber - minBellNumber + 1;
-		pixelsPerSecond = animationSpeed * maxWidth / (numBells - 1 + maxThreadWidth);
+		numColumns = maxColumn - minColumn + 1;
+		pixelsPerSecond = animationSpeed * maxWidth / (numColumns - 1 + maxThreadWidth);
 		rowNum--;
 		rowTime = rowTimes[rowNum];
 	}
 
 	context.clearRect(0, 0, canvasWidth, canvasHeight);
-	if (maxBellNumber < minBellNumber) {
+	if (maxColumn < minColumn) {
 		return;
 	}
 	const firstRowNum = Math.max(rowNum, 0);
 	const firstRowTime = rowTimes[firstRowNum];
 
-	const zoomX = canvasWidth / (numBells - 1 + maxThreadWidth);
-	const offsetX = 0.5 * maxThreadWidth - minBellNumber;
+	const zoomX = canvasWidth / (numColumns - 1 + maxThreadWidth);
+	const offsetX = 0.5 * maxThreadWidth - minColumn;
 	const height = Math.round((time - firstRowTime) * pixelsPerSecond);
 	const offsetY = Math.min(height - canvasHeight, 0);
 
 	for (let thread of activeThreads) {
 		const threadFirstRowNum = thread.initialRowNum;
-		const threadLastRowNum = Math.min(threadFirstRowNum + thread.numberOfRows, lastRowNum);
+		const threadLastRowNum = Math.min(threadFirstRowNum + thread.numberOfRows - 1, lastRowNum);
 		rowNum = Math.max(firstRowNum, threadFirstRowNum);
 		rowTime = rowTimes[rowNum];
 		let positionX = (thread.positions[rowNum - threadFirstRowNum] + offsetX) * zoomX;
@@ -177,7 +177,7 @@ function draw(context, time) {
 		context.moveTo(positionX, positionY);
 		context.lineWidth = Math.min(thread.threadWidths[0] * userZoom, 1) * zoomX;
 		context.strokeStyle = hslaToString(thread.color);
-		while (rowNum < threadLastRowNum) {
+		while (rowNum <= threadLastRowNum) {
 			rowNum++;
 			rowTime = rowTimes[rowNum];
 			positionX = (thread.positions[rowNum - threadFirstRowNum] + offsetX) * zoomX;
