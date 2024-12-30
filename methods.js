@@ -322,7 +322,7 @@ function grandsire(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 	const minBell = Math.min(...previousRow);
 	let firstSwapper = 0, lastSwapper = numBells - 1;
 	let numWeaving = numBells;
-	if (cover !== Cover.NONE) {
+	if (cover !== Cover.NONE && numBells > 3) {
 		if (cover === Cover.EITHER) {
 			cover = previousRow[0] > previousRow[numBells - 1] ? Cover.LEFT : Cover.RIGHT;
 		}
@@ -337,7 +337,11 @@ function grandsire(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 		firstSwap = previousRow[firstSwapper] === minBell ? 0 : 1;
 	}
 	if (numRows === undefined) {
-		numRows = 2 * numWeaving * (numWeaving - 2);
+		if (numWeaving === 3) {
+			numRows = 12;
+		} else {
+			numRows = 2 * numWeaving * (numWeaving - 2);
+		}
 	}
 
 	const output = [];
@@ -345,10 +349,14 @@ function grandsire(previousRow, numRows, cover = Cover.NONE, firstSwap = undefin
 	for (let i = 0; i < numRows; i++) {
 		const nextRow = row.slice();
 		let lowerSwap;
-		if (row[firstSwapper] === minBell && firstSwap === 0) {
-			nextRow[firstSwapper] = row[firstSwapper + 1];
-			nextRow[firstSwapper + 1] = row[firstSwapper];
-			lowerSwap = firstSwapper + 3;
+		if (row[firstSwapper] === minBell) {
+			if (firstSwap === 0) {
+				nextRow[firstSwapper] = row[firstSwapper + 1];
+				nextRow[firstSwapper + 1] = row[firstSwapper];
+				lowerSwap = firstSwapper + 3;
+			} else if (numWeaving === 3) {
+				lowerSwap = firstSwapper + 3;
+			}
 		} else {
 			lowerSwap = firstSwapper + firstSwap;
 		}

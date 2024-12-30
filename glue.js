@@ -162,10 +162,10 @@ document.getElementById('btn-whittingtons').addEventListener('pointerdown', func
 
 document.getElementById('num-bells').addEventListener('change', function (event) {
 	const newNumberOfBells = parseInt(this.value);
-	setNotes(trebleNote, newNumberOfBells)
+	const firstBar = changeBarLength(getCurrentBar(), newNumberOfBells);
+	setNotes(trebleNote, Math.max(...firstBar))
 	.then(function () {
 		numberOfBells = newNumberOfBells;
-		const firstBar = changeBarLength(getCurrentBar(), numberOfBells);
 		if (rowGenerator) {
 			const newRows = rowGenerator(firstBar);
 			compositionFunction(newRows);
