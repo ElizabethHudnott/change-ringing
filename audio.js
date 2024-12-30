@@ -54,12 +54,9 @@ function loadSamples(treble, numberOfNotes) {
 	return Promise.all(promises).then(() => noteNumbers = newNotes);
 }
 
-function setNotes(treble, numberOfNotes) {
-	return loadSamples(treble, numberOfNotes);
-}
-
 function instrumentChange(name) {
 	instrument = name;
+	samples = [];
 	loadSamples(noteNumbers[0], noteNumbers.length);
 }
 
@@ -85,6 +82,7 @@ let firstRowNumber = 0;
 let currentRowNumber = 0;
 let nextColumnNumber = 0;
 let noteLength = 60 / 104;
+let timingVariance = 1 / 40;		// Between 1/40 and 1/67
 let lastScheduled = 0;
 let onrow;
 const LOOKAHEAD_TIME = 0.1;
@@ -103,7 +101,8 @@ function scheduleNotes() {
 	const maxSchedule = currentTime + LOOKAHEAD_TIME;
 	while (nextNoteTime <= maxSchedule) {
 		const nextBell = row[nextColumnNumber];
-		playNote(nextBell, nextNoteTime);
+		const realNoteTime = nextNoteTime + Math.random() * 2 * timingVariance - timingVariance;
+		playNote(nextBell, realNoteTime);
 		lastScheduled = nextNoteTime;
 		nextNoteTime += noteLength;
 		nextColumnNumber++;
@@ -154,7 +153,7 @@ function repeatBar(row) {
 
 export {
 	getAudioContext,
-	setNotes,
+	loadSamples as setNotes,
 	instrumentChange,
 	setMusic,
 	setBarCallback,
