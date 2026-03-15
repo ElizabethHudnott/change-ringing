@@ -1,4 +1,4 @@
-import {NamedRow, Method, Cover, homing} from './methods.js';
+import {NamedRow, Method, Cover, homing, bubble} from './methods.js';
 import {setNotes, getAudioContext, setBarCallback, getCurrentBar, repeatBar, setMusic} from './audio.js';
 import {addWeavingRow, drawWeave, setZoom} from './graphics.js';
 
@@ -56,6 +56,7 @@ function animate() {
 animationID = requestAnimationFrame(animate);
 
 let rowGenerator, compositionFunction;
+let homingFunction = homing;
 
 function changeBarLength(bar, newLength) {
 	let length = bar.length;
@@ -101,9 +102,9 @@ function runMethod(method) {
 
 function homeInOnBar(rowFunction) {
 	const firstBar = getCurrentBar();
-	const newRows = homing(firstBar, rowFunction(numberOfBells));
+	const newRows = homingFunction(firstBar, rowFunction(numberOfBells));
 	setMusic(newRows, newRows.length - 1);
-	rowGenerator = row => homing(row, rowFunction(row.length));
+	rowGenerator = row => homingFunction(row, rowFunction(row.length));
 	compositionFunction = rows => setMusic(rows, rows.length - 1);
 }
 
@@ -160,7 +161,7 @@ document.getElementById('btn-whittingtons').addEventListener('pointerdown', func
 	homeInOnBar(NamedRow.whittingtons);
 });
 
-document.getElementById('num-bells').addEventListener('change', function (event) {
+document.getElementById('num-bells').addEventListener('input', function (event) {
 	const newNumberOfBells = parseInt(this.value);
 	const firstBar = changeBarLength(getCurrentBar(), newNumberOfBells);
 	setNotes(trebleNote, Math.max(...firstBar))
@@ -173,6 +174,14 @@ document.getElementById('num-bells').addEventListener('change', function (event)
 			setMusic([firstBar]);
 		}
 	});
+});
+
+document.getElementById('homing-function').addEventListener('input', function (event) {
+	if (this.value === "homing") {
+		homingFunction = homing;
+	} else {
+		homingFunction = bubble;
+	}
 });
 
 // Full screen functionality

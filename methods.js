@@ -222,6 +222,53 @@ function homing(previousRow, targetRow) {
 	return output;
 }
 
+function bubble(previousRow, targetRow) {
+	const prevNumBells = previousRow.length;
+	const targetNumBells = targetRow.length;
+	const toAdd = targetRow.filter(x => !previousRow.includes(x));
+	let changed = toAdd.length > 0;
+	let row = [];
+	for (let i = 0; i < prevNumBells; i++) {
+		const value = previousRow[i];
+		if (targetRow.includes(value)) {
+			row.push(value);
+		} else {
+			changed = true;
+		}
+	}
+	row = row.concat(toAdd);
+	const output = changed ? homing(previousRow, row) : [];
+
+	let sorted = false;
+	do {
+		let increment;
+		changed = false;
+		row = row.slice();
+		for (let i = 0; i < targetNumBells - 1; i += increment) {
+			increment = 1;
+			const value1 = row[i];
+			const value2 = row[i + 1];
+			if (targetRow.indexOf(value1) > targetRow.indexOf(value2)) {
+				row[i] = value2;
+				row[i + 1] = value1;
+				increment = 2;
+				changed = true;
+			}
+		}
+		sorted = true;
+		if (changed) {
+			output.push(row);
+			for (let i = 0; i < targetNumBells - 1; i++) {
+				if (targetRow.indexOf(row[i]) > targetRow.indexOf(row[i + 1])) {
+					sorted = false;
+					break;
+				}
+			}
+		}
+	} while (!sorted);
+	return output;
+}
+
 /**
  * Requires at least 3 bells.
  * @param {number} [numRows] How many rows of plain hunting to return or undefined to
@@ -382,4 +429,5 @@ export {
 	Cover,
 	Method,
 	homing,
+	bubble,
 }
